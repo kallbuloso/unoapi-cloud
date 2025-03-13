@@ -11,27 +11,26 @@ x-base: &base
   working_dir: /app
   environment:
     NODE_ENV: development
-    AMQP_URL: amqp://guest:guest@rabbitmq:5672
+    AMQP_URL: amqp://guest:guest@rabbitmq:5673
     BASE_URL: http://web:9876
-    REDIS_URL: redis://redis:6379
-    STORAGE_ENDPOINT: http://minio:9002
-    GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+    REDIS_URL: redis://redis:6380
+    STORAGE_ENDPOINT: http://minio:9100
   depends_on:
     - redis
     - rabbitmq
 
 x-minio: &minio
   image: quay.io/minio/minio:latest
-  command: server --console-address ":9003" --address ":9002" /data
+  command: server --console-address ":9101" --address ":9100" /data
   env_file: .env
   environment:
-    MINIO_SERVER_URL: http://localhost:9002
-    MINIO_BROWSER_REDIRECT_URL: http://localhost:9003
+    MINIO_SERVER_URL: http://localhost:9100
+    MINIO_BROWSER_REDIRECT_URL: http://localhost:9101
   expose:
-    - 9002:9002
-    - 9003:9003
+    - 9100:9100
+    - 9101:9101
   healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:9002/minio/health/live"]
+    test: ["CMD", "curl", "-f", "http://localhost:9100/minio/health/live"]
     interval: 30s
     timeout: 20s
     retries: 3
@@ -46,15 +45,15 @@ services:
 
   worker:
     <<: *base
-    entrypoint: sh -c 'wait-for redis:6379 rabbitmq:5672 -- yarn worker-dev'
+    entrypoint: sh -c 'wait-for redis:6380 rabbitmq:5673 -- yarn worker-dev'
     restart: on-failure
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
     hostname: rabbitmq
     ports:
-      - 5672:5672
-      - 15672:15672
+      - 5673:5673
+      - 15673:15673
     volumes:
       - rabbitmq:/var/lib/rabbitmq
     restart: on-failure
@@ -65,14 +64,14 @@ services:
       - redis:/data
     command: redis-server --appendonly yes
     ports:
-      - 6379:6379
+      - 6380:6380
     restart: on-failure
 
   minio:
     <<: *minio
     ports:
-      - 9000:9000
-      - 9001:9001
+      - 9100:9100
+      - 9101:9101
     volumes:
       - storage1:/data
 
