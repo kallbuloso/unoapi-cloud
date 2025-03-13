@@ -14,7 +14,7 @@ x-base: &base
     AMQP_URL: amqp://guest:guest@rabbitmq:5672
     BASE_URL: http://web:9876
     REDIS_URL: redis://redis:6379
-    STORAGE_ENDPOINT: http://minio:9000
+    STORAGE_ENDPOINT: http://minio:9002
     GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
   depends_on:
     - redis
@@ -22,16 +22,16 @@ x-base: &base
 
 x-minio: &minio
   image: quay.io/minio/minio:latest
-  command: server --console-address ":9001" --address ":9000" /data
+  command: server --console-address ":9003" --address ":9002" /data
   env_file: .env
   environment:
-    MINIO_SERVER_URL: http://localhost:9000
-    MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    MINIO_SERVER_URL: http://localhost:9002
+    MINIO_BROWSER_REDIRECT_URL: http://localhost:9003
   expose:
-    - 9000:9000
-    - 9001:9001
+    - 9002:9002
+    - 9003:9003
   healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+    test: ["CMD", "curl", "-f", "http://localhost:9002/minio/health/live"]
     interval: 30s
     timeout: 20s
     retries: 3
